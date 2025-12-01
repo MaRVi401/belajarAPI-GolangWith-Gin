@@ -1,6 +1,7 @@
 package station
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 )
@@ -23,7 +24,20 @@ func NewService() Service {
 func (s *service) GetAllStation() (Response []StationResponse, err error) {
 	url := "https://jakartamrt.co.id/id/val/stasiuns"
 
-	//
+	bytesResponse, err := DoRequest(*s.client, url)
+	if err != nil {
+		return
+	}
+
+	var stations []Station
+	err = json.Unmarshal(bytesResponse, &stations)
+
+	for _, item := range stations {
+		Response = append(Response, StationResponse{
+			Id:   item.id,
+			Name: item.name,
+		})
+	}
 
 	return
 }

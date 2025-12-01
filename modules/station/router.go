@@ -1,6 +1,11 @@
 package station
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/MaRVi401/belajarAPI-GolangWith-Gin.git/common/response"
+	"github.com/gin-gonic/gin"
+)
 
 func Initiate(router *gin.RouterGroup) {
 	stationService := NewService()
@@ -12,7 +17,22 @@ func Initiate(router *gin.RouterGroup) {
 func GetAllStation(c *gin.Context, service Service) {
 	datas, err := service.GetAllStation()
 	if err != nil {
-		// Handle error response
+		c.JSON(
+			http.StatusBadRequest,
+			response.APIResponse{
+				Success: false,
+				Message: err.Error(),
+				Data:    nil,
+			},
+		)
+		return
 	}
-	// balikinresponse
+	c.JSON(
+		http.StatusOK,
+		response.APIResponse{
+			Success: true,
+			Message: "Success Get All Station",
+			Data:    datas,
+		},
+	)
 }
