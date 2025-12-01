@@ -9,7 +9,7 @@ import (
 
 func Initiate(router *gin.RouterGroup) {
 	stationService := NewService()
-	station := router.Group("/station")
+	station := router.Group("/stations")
 	station.GET("", func(c *gin.Context) {
 		GetAllStation(c, stationService)
 	})
