@@ -17,6 +17,6 @@ type Schedule struct {
 	ScheduleLebakBulus string `json:"jadwal_lb_biasa"`
 }
 type ScheduleResponse struct {
-	StatuinName string `json:"station"`
+	StationName string `json:"station"`
 	Time        string `json:"time"`
 }

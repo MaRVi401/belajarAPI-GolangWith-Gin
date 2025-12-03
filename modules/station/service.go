@@ -73,19 +73,22 @@ func (s *service) CheckSchedulesByStations(id string) (Response []ScheduleRespon
 	if err != nil {
 		return
 	}
-	//Schedule selected by id station
-	var scheduleSelected []Schedule
+
+	var scheduleSelected Schedule
+
 	for _, item := range schedule {
 		if item.StationId == id {
 			scheduleSelected = item
 			break
 		}
 	}
+
 	if scheduleSelected.StationId == "" {
 		err = errors.New("Station not found")
 		return
 	}
-	response, err = ConvertToScheduleResponse(scheduleSelected)
+
+	Response, err = ConvertToScheduleResponse(scheduleSelected)
 	if err != nil {
 		return
 	}
@@ -100,20 +103,20 @@ func ConvertToScheduleResponse(schedule Schedule) (Response []ScheduleResponse, 
 	scheduleLebakBulus := schedule.ScheduleLebakBulus
 	scheduleBundaranHI := schedule.ScheduleBundaranHI
 
-	scheduleLebakBulusParsed, err := ConvertToTimeFormat(scheduleLebakBulus)
+	scheduleLebakBulusParsed, err := ConvertScheduleToTimeFormat(scheduleLebakBulus)
 	if err != nil {
 		return
 	}
-	
-	scheduleBundaranHIParsed, err := ConvertToTimeFormat(scheduleBundaranHI)
+
+	scheduleBundaranHIParsed, err := ConvertScheduleToTimeFormat(scheduleBundaranHI)
 	if err != nil {
 		return
-	}	
+	}
 
 	//Convert to response
 	for _, item := range scheduleLebakBulusParsed {
 		if item.Format("15:04") > time.Now().Format("15:04") {
-			response = append(response, ScheduleResponse{
+			Response = append(Response, ScheduleResponse{
 				StationName: LebakBulusTripName,
 				Time:        item.Format("15:04"),
 			})
@@ -122,7 +125,7 @@ func ConvertToScheduleResponse(schedule Schedule) (Response []ScheduleResponse, 
 
 	for _, item := range scheduleBundaranHIParsed {
 		if item.Format("15:04") > time.Now().Format("15:04") {
-			response = append(response, ScheduleResponse{
+			Response = append(Response, ScheduleResponse{
 				StationName: BundaranHITripName,
 				Time:        item.Format("15:04"),
 			})
@@ -132,22 +135,22 @@ func ConvertToScheduleResponse(schedule Schedule) (Response []ScheduleResponse, 
 }
 
 func ConvertScheduleToTimeFormat(schedule string) (respose []time.Time, err error) {
-	var (
-		parsedTime time.Time
-		Schedule   = string.Split(schedule, ",")
-		
-		for _, item := range Schedule {
-			trimmedTime := strings.TrimSpace(item)
-			if trimmedTime == "" {
-				continue
-			}
-			parsedTime, err = time.Parse("15:04", trimmedTime)
-			if err != nil {
-				err = errors.New("Invalid time format" + trimmedTime)
-				return
-			}
-			respose = append(respose, parsedTime)
+	var parsedTime time.Time
+
+	Schedule := strings.Split(schedule, ",")
+
+	for _, item := range Schedule {
+		trimmedTime := strings.TrimSpace(item)
+		if trimmedTime == "" {
+			continue
 		}
-		return
-	)
+		parsedTime, err = time.Parse("15:04", trimmedTime)
+		if err != nil {
+			err = errors.New("Invalid time format" + trimmedTime)
+			return
+		}
+		respose = append(respose, parsedTime)
+	}
+
+	return
 }
