@@ -50,6 +50,7 @@ func (s *service) GetAllStation() (Response []StationResponse, err error) {
 	return
 }
 
+// PERBAIKAN: Fungsi DoRequest sekarang memeriksa kode status HTTP
 func DoRequest(client *http.Client, url string) ([]byte, error) {
 	resp, err := client.Get(url)
 	if err != nil {
@@ -57,11 +58,16 @@ func DoRequest(client *http.Client, url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
+	// PERBAIKAN KRITIS: Cek kode status (harus 200 OK)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("external service failed with status: " + resp.Status)
+	}
+
 	return io.ReadAll(resp.Body)
 }
 
 func (s *service) CheckSchedulesByStations(id string) (Response []ScheduleResponse, err error) {
-	url := "https://jakartamrt.co.id/id/val/jadwal/"
+	url := "https://jakartamrt.co.id/id/val/stasiuns"
 
 	bytesResponse, err := DoRequest(s.client, url)
 	if err != nil {
@@ -144,9 +150,11 @@ func ConvertScheduleToTimeFormat(schedule string) (respose []time.Time, err erro
 		if trimmedTime == "" {
 			continue
 		}
-		parsedTime, err = time.Parse("15:04", trimmedTime)
+
+		// PERBAIKAN TIME FORMAT: Mengganti "15:04" menjadi "15:04:05" untuk menangani detik
+		parsedTime, err = time.Parse("15:04:05", trimmedTime)
 		if err != nil {
-			err = errors.New("Invalid time format" + trimmedTime)
+			err = errors.New("Invalid time format " + trimmedTime)
 			return
 		}
 		respose = append(respose, parsedTime)
